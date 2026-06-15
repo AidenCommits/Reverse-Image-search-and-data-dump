@@ -1,1 +1,1 @@
-# learn the libraries for rever img searching
+# learn the libraries for reverse img searching
