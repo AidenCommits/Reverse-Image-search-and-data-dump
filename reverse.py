@@ -50,10 +50,11 @@ def load_image():
 
 
 def extract_text(selected_image):
-    text = pytesseract.image_to_string(selected_image)
+    text = pytesseract.image_to_string(selected_image, config='--psm 6')
 
-    if text:
-        print(f"Extracted Text: {text}")
+    #if text:
+        #print(f"Extracted Text: {text}")
+    print((repr(text)))
     return text
 
 def find_sku(text):
@@ -61,7 +62,8 @@ def find_sku(text):
     patterns = [
         r'\bSKU[:\s]*([A-Za-z0-9]+)\b',  # Matches "SKU: ABC123" or "SKU ABC123"
         r'\b([A-Za-z0-9]+-[A-Za-z0-9]+)\b',
-        r'\b([A-Z0-9]+#([A-Z0-9]+))\b'  # Matches patterns like "ABC-123"
+        r'\b([A-Z0-9]+#([A-Z0-9]+))\b',# Matches patterns like "ABC-123"
+        r'([A-Z]{2,}#\d+)'
     ]
     for line in lines:
         for pattern in patterns:
