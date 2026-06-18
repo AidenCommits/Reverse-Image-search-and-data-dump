@@ -16,8 +16,10 @@ continue_button = tk.Button(root, text="continue")
 clear_button = tk.Button(root, text="clear")
 image_entry = tk.Entry(root) ## may need to change for pillow
 output_entry = tk.Entry(root)
+filepath_text = tk.Text(root, height=1, width=50)
 
 selected_image = None
+image = None
 
 #window config
 root.title("Find SKU Code")
@@ -36,14 +38,21 @@ def load_image():
             ]
     )
     
-    #image = Image.open(file_path)
-    if selected_image:
-        selected_image = Image.open(file_path)
-        image_entry.insert(0, file_path)
+    if not file_path:
+        return
+    selected_image = Image.open(file_path)
+    image_entry.delete(0, tk.END)
+    image_entry.insert(0, file_path)
+
+    print("loaded image: ", file_path)
+
+    
 
 def extract_text(selected_image):
     text = pytesseract.image_to_string(selected_image)
-    print(text)
+
+    if text:
+        print(f"Extracted Text: {text}")
     return text
 
 def find_sku(text):
@@ -82,6 +91,5 @@ choose_image_button.place(x=15, y=200)
 
 #button config
 choose_image_button.config(command=load_image)
-continue_button.config(command=print_sku())
-
+continue_button.config(command=print_sku)
 root.mainloop()
