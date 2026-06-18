@@ -19,7 +19,6 @@ output_entry = tk.Entry(root)
 filepath_text = tk.Text(root, height=1, width=50)
 
 selected_image = None
-image = None
 
 #window config
 root.title("Find SKU Code")
@@ -40,13 +39,15 @@ def load_image():
     
     if not file_path:
         return
-    selected_image = Image.open(file_path)
-    image_entry.delete(0, tk.END)
-    image_entry.insert(0, file_path)
+    else:
+        selected_image = Image.open(file_path).convert('RGB')
+        image_entry.delete(0, tk.END)
+        image_entry.insert(0, file_path)
 
-    print("loaded image: ", file_path)
+    print("loaded image: ", selected_image)
+    return selected_image
 
-    
+
 
 def extract_text(selected_image):
     text = pytesseract.image_to_string(selected_image)
