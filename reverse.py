@@ -1,13 +1,13 @@
 ### Version 1.0 ### Find SKU From Image ###
 
-## verify code works with actual images
 
 from tkinter import filedialog
 from tkinter.filedialog import askopenfilename
 import tkinter as tk
 import re
 from PIL import Image
-import pytesseract
+import easyocr
+import numpy as np
 
 #variables
 root = tk.Tk()
@@ -19,6 +19,8 @@ output_entry = tk.Entry(root)
 filepath_text = tk.Text(root, height=1, width=50)
 
 selected_image = None
+selected_image_path = None
+reader = easyocr.Reader(['en'])
 
 #window config
 root.title("Find SKU Code")
@@ -29,6 +31,7 @@ root.resizable(False, False)
 def load_image():
 
     global selected_image
+    global selected_image_path
 
     file_path = askopenfilename(
         parent=root,
@@ -41,6 +44,7 @@ def load_image():
         return
     else:
         selected_image = Image.open(file_path).convert('RGB')
+        selected_image_path = file_path
         image_entry.delete(0, tk.END)
         image_entry.insert(0, file_path)
 
@@ -50,20 +54,24 @@ def load_image():
 
 
 def extract_text(selected_image):
-    text = pytesseract.image_to_string(selected_image, config='--psm 6')
 
-    #if text:
-        #print(f"Extracted Text: {text}")
+    image_array = np.array(selected_image)
+    #text = reader.readtext(selected_image)
+    result = reader.readtext(image_array)
+    
+    text = "\n".join([item[1] for item in result])
+
     print((repr(text)))
     return text
 
 def find_sku(text):
-    lines = text.splitlines()
+    lines = text
     patterns = [
         r'\bSKU[:\s]*([A-Za-z0-9]+)\b',  # Matches "SKU: ABC123" or "SKU ABC123"
         r'\b([A-Za-z0-9]+-[A-Za-z0-9]+)\b',
         r'\b([A-Z0-9]+#([A-Z0-9]+))\b',# Matches patterns like "ABC-123"
-        r'([A-Z]{2,}#\d+)'
+        r'([A-Z]{2,}#\d+)',
+        r'([A-Z]{4,})'
     ]
     for line in lines:
         for pattern in patterns:
