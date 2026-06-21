@@ -9,7 +9,7 @@ from PIL import Image
 import easyocr
 import numpy as np
 
-#variables
+#tk variables
 root = tk.Tk()
 choose_image_button = tk.Button(root, text="Choose Image",)
 continue_button = tk.Button(root, text="continue")
@@ -18,6 +18,7 @@ image_entry = tk.Entry(root) ## may need to change for pillow
 output_entry = tk.Entry(root)
 filepath_text = tk.Text(root, height=1, width=50)
 
+#body variables
 selected_image = None
 selected_image_path = None
 reader = easyocr.Reader(['en'])
