@@ -37,7 +37,7 @@ def load_image():
     file_path = askopenfilename(
         parent=root,
         filetypes = [
-            ("Image files", " *.jpg *.jpeg *.png *.bmp *.tiff")
+            ("Image files", "*.jpg *.jpeg *.png *.bmp *.tiff")
             ]
     )
     
@@ -45,6 +45,8 @@ def load_image():
         return
     else:
         selected_image = Image.open(file_path).convert('RGB')
+        print("image size: ", selected_image.size)
+        print("image mode: ", selected_image.mode)
         selected_image_path = file_path
         image_entry.delete(0, tk.END)
         image_entry.insert(0, file_path)
@@ -54,19 +56,21 @@ def load_image():
 
 
 
-def extract_text(selected_image):
+def extract_text(selected_image_path):
 
-    image_array = np.array(selected_image)
+    #image_array = np.array(selected_image_path)
     #text = reader.readtext(selected_image)
-    result = reader.readtext(image_array)
+    result = reader.readtext(selected_image_path)
+    print("Easy-OCR raw result: ", result)
     
     text = "\n".join([item[1] for item in result])
 
+    print("Extracted text: ")
     print((repr(text)))
     return text
 
 def find_sku(text):
-    lines = text
+    lines = text.splitlines()
     patterns = [
         r'\bSKU[:\s]*([A-Za-z0-9]+)\b',  # Matches "SKU: ABC123" or "SKU ABC123"
         r'\b([A-Za-z0-9]+-[A-Za-z0-9]+)\b',
@@ -85,7 +89,7 @@ def print_sku():
     if selected_image is None:
         return
     
-    text = extract_text(selected_image)
+    text = extract_text(selected_image_path)
     sku = find_sku(text)
     if sku:
         output_entry.insert(0, sku)
