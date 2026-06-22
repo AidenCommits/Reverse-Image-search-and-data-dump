@@ -1,13 +1,12 @@
 ### Version 1.0 ### Find SKU From Image ###
 
-
 from tkinter import filedialog
 from tkinter.filedialog import askopenfilename
 import tkinter as tk
 import re
-from PIL import Image
-import easyocr
+from PIL import Image, ImageOps
 import numpy as np
+import easyocr
 
 #tk variables
 root = tk.Tk()
@@ -44,10 +43,13 @@ def load_image():
     if not file_path:
         return
     else:
-        selected_image = Image.open(file_path).convert('RGB')
+        selected_image = Image.open(file_path)
+        selected_image = ImageOps.exif_transpose(selected_image)
+        selected_image = selected_image.convert('RGB')
         print("image size: ", selected_image.size)
         print("image mode: ", selected_image.mode)
         selected_image_path = file_path
+        #selected_image.save("debug_loaded_image.jpg")
         image_entry.delete(0, tk.END)
         image_entry.insert(0, file_path)
 
@@ -56,11 +58,25 @@ def load_image():
 
 
 
-def extract_text(selected_image_path):
+def extract_text(selected_image):
 
-    #image_array = np.array(selected_image_path)
+    image = selected_image.resize(
+        (selected_image.width * 3, selected_image.height * 3)
+    )
+
+    image_array = np.array(image)
     #text = reader.readtext(selected_image)
-    result = reader.readtext(selected_image_path)
+    
+    result = reader.readtext(
+        image_array,
+        detail=1,
+        paragraph=False,
+        mag_ratio=2,
+        text_threshold=0.3,
+        low_text=0.2,
+        link_threshold=0.2
+    )
+    
     print("Easy-OCR raw result: ", result)
     
     text = "\n".join([item[1] for item in result])
@@ -70,14 +86,13 @@ def extract_text(selected_image_path):
     return text
 
 def find_sku(text):
+    
     lines = text.splitlines()
+    
     patterns = [
-        r'\bSKU[:\s]*([A-Za-z0-9]+)\b',  # Matches "SKU: ABC123" or "SKU ABC123"
-        r'\b([A-Za-z0-9]+-[A-Za-z0-9]+)\b',
-        r'\b([A-Z0-9]+#([A-Z0-9]+))\b',# Matches patterns like "ABC-123"
-        r'([A-Z]{2,}#\d+)',
-        r'([A-Z]{4,})'
+        r'(RN#\d+)'
     ]
+    
     for line in lines:
         for pattern in patterns:
             match = re.search(pattern, line)
@@ -89,12 +104,17 @@ def print_sku():
     if selected_image is None:
         return
     
-    text = extract_text(selected_image_path)
+    text = extract_text(selected_image)
     sku = find_sku(text)
+
     if sku:
         output_entry.insert(0, sku)
     else:
         output_entry.insert(0, "SKU not found")
+
+def clear_fields():
+    image_entry.delete(0, tk.END)
+    output_entry.delete(0, tk.END)
 
 
 #layout
@@ -108,4 +128,6 @@ choose_image_button.place(x=15, y=200)
 #button config
 choose_image_button.config(command=load_image)
 continue_button.config(command=print_sku)
+clear_button.config(command=clear_fields)
+
 root.mainloop()
