@@ -90,7 +90,8 @@ def find_sku(text):
     lines = text.splitlines()
     
     patterns = [
-        r'(RN#\d+)'
+        r'(RN#\d+)',
+        r'([A-Z]{2}\*[0-9]{5})'
     ]
     
     for line in lines:
@@ -122,8 +123,8 @@ tk.Label(root, text="Insert image").place(x=15, y=25)
 image_entry.place(x=15, y=50) ## may need to change for pillow
 continue_button.place(x=195, y=50)
 output_entry.place(x=15, y=100)
-clear_button.place(x=195, y=150)
-choose_image_button.place(x=15, y=200)
+clear_button.place(x=195, y=100)
+choose_image_button.place(x=15, y=135)
 
 #button config
 choose_image_button.config(command=load_image)
