@@ -7,15 +7,21 @@ import re
 from PIL import Image, ImageOps
 import numpy as np
 import easyocr
+import json
+import requests
+from bs4 import BeautifulSoup
+
 
 #tk variables
 root = tk.Tk()
 choose_image_button = tk.Button(root, text="Choose Image",)
 continue_button = tk.Button(root, text="continue")
 clear_button = tk.Button(root, text="clear")
+search_button = tk.Button(root, text="search")
 image_entry = tk.Entry(root) ## may need to change for pillow
 output_entry = tk.Entry(root)
 filepath_text = tk.Text(root, height=1, width=50)
+success_text = tk.Text(root, height=1, width=50)
 
 #body variables
 selected_image = None
@@ -80,6 +86,8 @@ def extract_text(selected_image):
     print("Easy-OCR raw result: ", result)
     
     text = "\n".join([item[1] for item in result])
+    text = text.upper()
+    text = text.replace("*", "#")
 
     print("Extracted text: ")
     print((repr(text)))
@@ -90,9 +98,70 @@ def find_sku(text):
     lines = text.splitlines()
     
     patterns = [
-        r'(RN#\d+)',
-        r'([A-Z]{2}\*[0-9]{5})'
-    ]
+
+    r'([A-Z]{2}\#[0-9]{5})',
+
+    # RN#73277
+    r'(RN#\d+)',
+
+    # RN 73277
+    r'(RN\s+\d+)',
+
+    # DX1234-001 (Nike)
+    r'([A-Z]{2}\d{4}-\d{3})',
+
+    # ABC123456
+    r'([A-Z]{3}\d{6})',
+
+    # ABC12345
+    r'([A-Z]{3}\d{5})',
+
+    # ABC1234
+    r'([A-Z]{3}\d{4})',
+
+    # 12345678
+    r'(\d{8})',
+
+    # 123456789
+    r'(\d{9})',
+
+    # 123456789012
+    r'(\d{12})',
+
+    # 1234567890123
+    r'(\d{13})',
+
+    # ABC-123
+    r'([A-Z]{3}-\d{3})',
+
+    # ABCD-1234
+    r'([A-Z]{4}-\d{4})',
+
+    # ABC123-456
+    r'([A-Z]{3}\d{3}-\d{3})',
+
+    # ABC123456789
+    r'([A-Z]{3}\d{9})',
+
+    # AA123456
+    r'([A-Z]{2}\d{6})',
+
+    # A12345678
+    r'([A-Z]\d{8})',
+
+    # ABCD1234
+    r'([A-Z]{4}\d{4})',
+
+    # ABCD12345
+    r'([A-Z]{4}\d{5})',
+
+    # Style: DX1234-001
+    r'Style[:\s]*([A-Z]{2}\d{4}-\d{3})',
+
+    # SKU: ABC12345
+    r'SKU[:\s]*([A-Z0-9\-]+)',
+
+]
     
     for line in lines:
         for pattern in patterns:
@@ -113,9 +182,14 @@ def print_sku():
     else:
         output_entry.insert(0, "SKU not found")
 
+    return sku
+
 def clear_fields():
     image_entry.delete(0, tk.END)
     output_entry.delete(0, tk.END)
+
+def search_sku():
+    pass
 
 
 #layout
@@ -125,10 +199,13 @@ continue_button.place(x=195, y=50)
 output_entry.place(x=15, y=100)
 clear_button.place(x=195, y=100)
 choose_image_button.place(x=15, y=135)
+success_text.place(x=15, y=170)
+search_button.place(x=195, y=135)
 
 #button config
 choose_image_button.config(command=load_image)
 continue_button.config(command=print_sku)
 clear_button.config(command=clear_fields)
+search_button.config(command=search_sku)
 
 root.mainloop()
