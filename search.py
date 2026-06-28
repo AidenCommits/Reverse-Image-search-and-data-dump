@@ -65,8 +65,8 @@ def search_web(identifier, max_results=3):
     with DDGS() as ddgs:
         results = ddgs.text(identifier, max_results=max_results)
 
-        print(f"searching for '{len(results)}' results")
-        print(results)
+        #print(f"searching for '{len(results)}' results")
+        #print(results)
 
         for result in results:
             url = result.get('href')

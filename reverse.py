@@ -4,10 +4,6 @@ import tkinter as tk
 import re
 from PIL import Image, ImageOps
 import numpy as np
-import easyocr
-import json
-import requests
-from bs4 import BeautifulSoup
 from search import search_web 
 from ocr import extract_text, find_sku
 
@@ -21,11 +17,6 @@ image_entry = tk.Entry(root) ## may need to change for pillow
 output_entry = tk.Entry(root)
 filepath_text = tk.Text(root, height=1, width=50)
 success_text = tk.Text(root, height=1, width=50)
-
-#body variables
-#selected_image = None
-#selected_image_path = None
-#reader = easyocr.Reader(['en'])
 
 #window config
 root.title("Find SKU Code")
@@ -51,14 +42,10 @@ def load_image():
         selected_image = Image.open(file_path)
         selected_image = ImageOps.exif_transpose(selected_image)
         selected_image = selected_image.convert('RGB')
-        print("image size: ", selected_image.size)
-        print("image mode: ", selected_image.mode)
         selected_image_path = file_path
-        #selected_image.save("debug_loaded_image.jpg")
         image_entry.delete(0, tk.END)
         image_entry.insert(0, file_path)
 
-    print("loaded image: ", selected_image)
     return selected_image
 
 
@@ -187,12 +174,28 @@ def clear_fields():
     output_entry.delete(0, tk.END)
 
 def continue_button_pressed():
-    image_path = load_image()
-    text = extract_text(image_path)
+    global selected_image
+
+    if selected_image is None:
+        output_entry.delete(0, tk.END)
+        output_entry.insert(0, "Choose image first")
+    
+    text = extract_text(selected_image)
     identifier = find_sku(text)
+
+    if not identifier:
+        output_entry.delete(0, tk.END)
+        output_entry.insert(0, "Identifier not found")
+        return
+    
+    output_entry.delete(0, tk.END)
+    output_entry.insert(0, identifier)
+
     candidates = search_web(identifier)
 
-    print(f"Candidates: {candidates}")
+    print(f"Candidates for {identifier}: ")
+    for candidate in candidates:
+        print(candidate["score"], candidate["url"])
 
 def search_button_pressed():
     pass
@@ -204,8 +207,7 @@ continue_button.place(x=195, y=50)
 output_entry.place(x=15, y=100)
 clear_button.place(x=195, y=100)
 choose_image_button.place(x=15, y=135)
-success_text.place(x=15, y=170)
-search_button.place(x=195, y=135)
+#search_button.place(x=195, y=135)
 
 #button config
 choose_image_button.config(command=load_image)

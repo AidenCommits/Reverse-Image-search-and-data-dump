@@ -3,8 +3,6 @@ import numpy as np
 import easyocr
 
 reader = easyocr.Reader(['en'])
-#selected_image = load_image()
-#selected_image_path = None
 
 def extract_text(selected_image):
 
@@ -13,7 +11,6 @@ def extract_text(selected_image):
     )
 
     image_array = np.array(image)
-    #text = reader.readtext(selected_image)
     
     result = reader.readtext(
         image_array,
@@ -25,13 +22,10 @@ def extract_text(selected_image):
         link_threshold=0.2
     )
     
-    print("Easy-OCR raw result: ", result)
-    
     text = "\n".join([item[1] for item in result])
     text = text.upper()
     text = text.replace("*", "#")
 
-    print("Extracted text: ")
     print((repr(text)))
     return text
 
