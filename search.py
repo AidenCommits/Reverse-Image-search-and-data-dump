@@ -88,11 +88,3 @@ def search_web(identifier, max_results=3):
         candidates.sort(key=lambda item: item['score'], reverse=True)
 
     return candidates
-
-if __name__ == "__main__":
-    candidate_urls = search_web(identifier)
-    
-    print(f"Candidate URLs for identifier '{identifier}':")
-    
-    for url in candidate_urls:
-        print(url)
