@@ -1,5 +1,3 @@
-### Version 1.0 ### Find SKU From Image ###
-
 from tkinter import filedialog
 from tkinter.filedialog import askopenfilename
 import tkinter as tk
@@ -10,7 +8,8 @@ import easyocr
 import json
 import requests
 from bs4 import BeautifulSoup
-
+from search import search_web 
+from ocr import extract_text, find_sku
 
 #tk variables
 root = tk.Tk()
@@ -24,9 +23,9 @@ filepath_text = tk.Text(root, height=1, width=50)
 success_text = tk.Text(root, height=1, width=50)
 
 #body variables
-selected_image = None
-selected_image_path = None
-reader = easyocr.Reader(['en'])
+#selected_image = None
+#selected_image_path = None
+#reader = easyocr.Reader(['en'])
 
 #window config
 root.title("Find SKU Code")
@@ -63,8 +62,7 @@ def load_image():
     return selected_image
 
 
-
-def extract_text(selected_image):
+#def extract_text(selected_image):
 
     image = selected_image.resize(
         (selected_image.width * 3, selected_image.height * 3)
@@ -93,7 +91,7 @@ def extract_text(selected_image):
     print((repr(text)))
     return text
 
-def find_sku(text):
+#def find_sku(text):
     
     lines = text.splitlines()
     
@@ -175,22 +173,29 @@ def print_sku():
         return
     
     text = extract_text(selected_image)
-    sku = find_sku(text)
+    identifier = find_sku(text)
 
-    if sku:
-        output_entry.insert(0, sku)
+    if identifier:
+        output_entry.insert(0, identifier)
     else:
-        output_entry.insert(0, "SKU not found")
+        output_entry.insert(0, "Identifier not found")
 
-    return sku
+    return identifier
 
 def clear_fields():
     image_entry.delete(0, tk.END)
     output_entry.delete(0, tk.END)
 
-def search_sku():
-    pass
+def continue_button_pressed():
+    image_path = load_image()
+    text = extract_text(image_path)
+    identifier = find_sku(text)
+    candidates = search_web(identifier)
 
+    print(f"Candidates: {candidates}")
+
+def search_button_pressed():
+    pass
 
 #layout
 tk.Label(root, text="Insert image").place(x=15, y=25)
@@ -204,8 +209,16 @@ search_button.place(x=195, y=135)
 
 #button config
 choose_image_button.config(command=load_image)
-continue_button.config(command=print_sku)
+continue_button.config(command=continue_button_pressed)
 clear_button.config(command=clear_fields)
-search_button.config(command=search_sku)
+#search_button.config(command=search_web)
+
+## possible function call for search_web() ##
+        #identifier = print_sku()
+        #candidates = search_web(identifier)
+
+        #for candidate in candidates:
+        #    print(candidate["score"], candidate["url"])
+######
 
 root.mainloop()
